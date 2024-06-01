@@ -1,13 +1,14 @@
 const express = require("express");
 const { uploadFile, generateDownloadLink, downloadFile } = require("../controller");
+const { Auth } = require("../middleware");
 
 const FileRouter = express.Router();
 
-FileRouter.post("/uploadFile",uploadFile);
+FileRouter.post("/uploadFile",Auth,uploadFile);
 
-FileRouter.get("/files/:uuid",generateDownloadLink);
+FileRouter.get("/:uuid",generateDownloadLink);
 
-FileRouter.get("/files/download/:uuid",downloadFile)
+FileRouter.get("/download/:uuid",downloadFile)
 
 module.exports = {
     FileRouter

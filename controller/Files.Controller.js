@@ -1,10 +1,19 @@
 const fileUploadService = require("../services");
-const {FileModel} = require("../model/index")
+const {FileModel} = require("../model/index");
+const cloudinary = require('cloudinary').v2;
+require("dotenv").config();
+
+cloudinary.config({ 
+
+  cloud_name: process.env.CLOUD_NAME, 
+  api_key: process.env.API_KEY, 
+  api_secret: process.env.API_SECRET 
+
+});
 
 const uploadFile = async (req,res) => {
 
     const upload = fileUploadService.single("file");
-    console.log(req.headers.host);
 
     upload(req,res, async function(err){
         if(err){
@@ -15,6 +24,9 @@ const uploadFile = async (req,res) => {
 
         try{
 
+            // const response = await cloudinary.uploader.upload(req.file.path, 
+            // function(error, result) {console.log(result); });
+
             const newData = new FileModel({
                 originalFileName : req.file.originalname,
                 newFileName : req.file.filename,
@@ -23,16 +35,18 @@ const uploadFile = async (req,res) => {
     
             const newlyInsertedFile = await newData.save();
     
-            res.status(200).json({
+            return res.status(200).json({
                 message : "File uploaded sucessful",
                 fileId : newlyInsertedFile._id
             });
 
         }catch(error) {
+
             console.log(error);
-            res.status(500).json({
+            return res.status(500).json({
                 error : "SOMETHING WENT WRONG"
             });
+
         }
 
     });
@@ -48,7 +62,7 @@ const generateDownloadLink = async (req,res) => {
 
         const downloadableLink = `http://${req.headers.host}/files/download/${fileId}`;
 
-        res.status(200).json({
+        return res.status(200).json({
             message : "Downloadable link generated",
             link : downloadableLink
         });
@@ -56,7 +70,7 @@ const generateDownloadLink = async (req,res) => {
     }catch(error){
 
         console.log(error);
-        res.status(500).json({
+        return res.status(500).json({
             error : "SOMETHING WENT WRONG"
         });
 
@@ -71,17 +85,17 @@ const downloadFile = async (req,res) =>{
         const fileId = req.params.uuid;
 
         const data = await FileModel.findById(fileId);
-        console.log(data)
+        // console.log(data)
 
-        res.download(data.filePath , data.originalFileName);
+        return res.download(data.filePath , data.originalFileName);
 
     }catch(error){
 
         console.log(error);
-        res.status(500).json({
+        return res.status(500).json({
             error : "SOMETHING WENT WRONG"
         });
-        
+
     }
 
 }
